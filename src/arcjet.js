@@ -12,6 +12,7 @@ export const httpArcjet = arcjetKey
         detectBot({
           mode: "LIVE",
           allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"],
+          disabled: process.env.NODE_ENV !== "production",
         }),
         slidingWindow({ mode: "LIVE", interval: "10s", max: 50 }),
       ],
@@ -26,6 +27,7 @@ export const wsArcjet = arcjetKey
         detectBot({
           mode: "LIVE",
           allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"],
+          disabled: process.env.NODE_ENV !== "production",
         }),
         slidingWindow({ mode: "LIVE", interval: "2s", max: 5 }),
       ],
@@ -36,7 +38,13 @@ export function securityMiddleware() {
     return async (req, res, next) => {
     if (!httpArcjet) return next();
 
-    if (req.hostname === "localhost" || req.hostname === "127.0.0.1") {
+    const clientIp = req.socket?.remoteAddress || req.connection?.remoteAddress;
+    const isLoopback =
+      clientIp === "127.0.0.1" ||
+      clientIp === "::1" ||
+      clientIp === "::ffff:127.0.0.1";
+
+    if (isLoopback) {
       return next();
     }
 
