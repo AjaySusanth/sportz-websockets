@@ -28,19 +28,19 @@ export const matches = pgTable("matches", {
 });
 
 export const commentary = pgTable("commentary", {
-	id: serial("id").primaryKey(),
-	matchId: integer("match_id")
-		.notNull()
-		.references(() => matches.id, { onDelete: "cascade" }),
-	minute: integer("minute").notNull(),
-	sequence: integer("sequence").notNull(),
-	period: integer("period"),
-	eventType: text("event_type").notNull(),
-	actor: text("actor"),
-	team: text("team"),
-	message: text("message").notNull(),
-	metadata: jsonb("metadata"),
-	tags: text("tags").array(),
-	createdAt: timestamp("created_at").notNull().defaultNow(),
+  id: serial("id").primaryKey(),
+  matchId: integer("match_id")
+    .notNull()
+    .references(() => matches.id, { onDelete: "cascade" }),
+  minute: integer("minute").notNull(),
+  sequence: integer("sequence").notNull(),
+  period: text("period"),
+  eventType: text("event_type").notNull(),
+  actor: text("actor"),
+  team: text("team"),
+  message: text("message").notNull(),
+  metadata: jsonb("metadata"),
+  tags: text("tags").array(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
