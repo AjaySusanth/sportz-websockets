@@ -23,7 +23,7 @@ function unsubscribe(matchId, socket){
 }
 
 function cleanupSubscriptions(socket) {
-  for (const matchId of socket.subscription) {
+  for (const matchId of socket.subscriptions) {
     unsubscribe(matchId,socket)
   }
 }
@@ -63,6 +63,7 @@ function handleMessage(socket, data) {
     message = JSON.parse(data.toString())
   } catch  {
     sendJson(socket, {type:'error', message:'Invalid JSON'})
+    return;
   }
 
   if (message?.type === 'subscribe' && Number.isInteger(message.matchId)) {

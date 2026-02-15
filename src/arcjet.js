@@ -10,9 +10,8 @@ export const httpArcjet = arcjetKey
       rules: [
         shield({ mode: "LIVE" }),
         detectBot({
-          mode: "LIVE",
+          mode: process.env.NODE_ENV === "production" ? "LIVE" : "DRY_RUN",
           allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"],
-          disabled: process.env.NODE_ENV !== "production",
         }),
         slidingWindow({ mode: "LIVE", interval: "10s", max: 50 }),
       ],
@@ -25,9 +24,8 @@ export const wsArcjet = arcjetKey
       rules: [
         shield({ mode: "LIVE" }),
         detectBot({
-          mode: "LIVE",
+          mode: process.env.NODE_ENV === "production" ? "LIVE" : "DRY_RUN",
           allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"],
-          disabled: process.env.NODE_ENV !== "production",
         }),
         slidingWindow({ mode: "LIVE", interval: "2s", max: 5 }),
       ],
