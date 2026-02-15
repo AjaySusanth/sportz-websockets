@@ -10,7 +10,7 @@ export const httpArcjet = arcjetKey
       rules: [
         shield({ mode: "LIVE" }),
         detectBot({
-          mode: "LIVE",
+          mode: process.env.NODE_ENV === "production" ? "LIVE" : "DRY_RUN",
           allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"],
         }),
         slidingWindow({ mode: "LIVE", interval: "10s", max: 50 }),
@@ -24,7 +24,7 @@ export const wsArcjet = arcjetKey
       rules: [
         shield({ mode: "LIVE" }),
         detectBot({
-          mode: "LIVE",
+          mode: process.env.NODE_ENV === "production" ? "LIVE" : "DRY_RUN",
           allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:PREVIEW"],
         }),
         slidingWindow({ mode: "LIVE", interval: "2s", max: 5 }),
@@ -34,22 +34,32 @@ export const wsArcjet = arcjetKey
 
 export function securityMiddleware() {
     return async (req, res, next) => {
-        if(!httpArcjet) return next();
+    if (!httpArcjet) return next();
 
-        try {
-            const decision = await httpArcjet.protect(req);
+    const clientIp = req.socket?.remoteAddress || req.connection?.remoteAddress;
+    const isLoopback =
+      clientIp === "127.0.0.1" ||
+      clientIp === "::1" ||
+      clientIp === "::ffff:127.0.0.1";
 
-            if(decision.isDenied()) {
-                if(decision.reason.isRateLimit()) {
-                    return res.status(429).json({ error: 'Too many requests.' });
-                }
+    if (isLoopback) {
+      return next();
+    }
 
-                return res.status(403).json({ error: 'Forbidden.' });
-            }
-        } catch (e) {
-            console.error('Arcjet middleware error', e);
-            return res.status(503).json({ error: 'Service Unavailable' });
+    try {
+      const decision = await httpArcjet.protect(req);
+
+      if (decision.isDenied()) {
+        if (decision.reason.isRateLimit()) {
+          return res.status(429).json({ error: "Too many requests." });
         }
+
+        return res.status(403).json({ error: "Forbidden." });
+      }
+    } catch (e) {
+      console.error("Arcjet middleware error", e);
+      return res.status(503).json({ error: "Service Unavailable" });
+    }
 
         next();
     }
